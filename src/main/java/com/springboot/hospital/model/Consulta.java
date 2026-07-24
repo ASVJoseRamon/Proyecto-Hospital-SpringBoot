@@ -2,6 +2,7 @@ package com.springboot.hospital.model;
 
 import java.util.Date;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -25,6 +26,6 @@ public class Consulta {
 
     private String informe;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     private Cita cita;
 }

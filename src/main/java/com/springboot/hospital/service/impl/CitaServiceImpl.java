@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import com.springboot.hospital.dto.CitaDTO;
@@ -44,14 +45,6 @@ public class CitaServiceImpl implements CitaService{
 
     private final CitaMapper citaMapper;
 
-    private final PacienteMapper pacienteMapper;
-
-    private final MedicoMapper medicoMapper;
-
-    private final MedicoService medicoService;
-
-    private final PacienteService pacienteService;
-
     @Override
     public List<CitaDTO> getAllCitas() {
         List<Cita> citas = citaRepository.findAll();
@@ -69,17 +62,18 @@ public class CitaServiceImpl implements CitaService{
 
     @Override
     public Cita createCita(CitaDTO citaDTO, Long idPaciente, Long idMedico) throws ParseException {
-        PacienteDTO pacienteDTO = pacienteService.getPacienteById(idPaciente).orElse(null);
-        MedicoDTO medicoDTO = medicoService.getMedicoById(idMedico).orElse(null);
+        Optional<Paciente> pacienteOptional = pacienteRepository.findById(idPaciente);
+        Optional<Medico> medicoOptional = medicoRepository.findById(idMedico);
 
-        if(pacienteDTO == null || medicoDTO == null){
+        if(pacienteOptional == null || medicoOptional == null){
             return null;
         }
 
-        Paciente paciente = pacienteMapper.toEntity(pacienteDTO);
-        Medico medico = medicoMapper.toEntity(medicoDTO);
+        Paciente paciente = pacienteOptional.get();
+        Medico medico = medicoOptional.get();
+        
         Cita cita = citaMapper.toEntity(citaDTO,paciente,medico);
-
+        
         return citaRepository.save(cita);
     }
 
@@ -89,6 +83,8 @@ public class CitaServiceImpl implements CitaService{
         
         if(citaOptional.isPresent()) {
             Cita cita = citaOptional.get();
+
+            cita.setId(citaDTO.getId());
 
             if(citaDTO.getFecha() != null) {
                 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");

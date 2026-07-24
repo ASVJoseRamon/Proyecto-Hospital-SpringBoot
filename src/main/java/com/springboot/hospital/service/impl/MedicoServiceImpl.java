@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import com.springboot.hospital.dto.CitaDTO;
@@ -24,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 public class MedicoServiceImpl implements MedicoService {
 
     private final MedicoRepository medicoRepository;
-
+    
     private final CitaService citaService;
 
     private final CitaMapper citaMapper;

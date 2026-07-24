@@ -26,7 +26,6 @@ import com.springboot.hospital.service.MedicoService;
 import com.springboot.hospital.service.PacienteService;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PutMapping;
 
 
@@ -99,7 +98,7 @@ public class CitaController {
         return citaService.getCitasByMedicoId(medicoId);
     }
 
-    @GetMapping("/cita/{statusCita}")
+    @GetMapping("/status/{statusCita}")
     public List<CitaDTO> listarCitasPorStatus(@PathVariable StatusCita statusCita) {
         return citaService.getCitasByStatusCita(statusCita);
     }

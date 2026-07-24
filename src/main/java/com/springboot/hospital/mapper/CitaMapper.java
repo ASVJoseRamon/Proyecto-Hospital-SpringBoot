@@ -28,7 +28,7 @@ public class CitaMapper {
     public CitaDTO toDTO(Cita cita) {
         CitaDTO citaDTO = new CitaDTO();
 
-        citaDTO.setId(citaDTO.getId());
+        citaDTO.setId(cita.getId());
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         String formatedFecha = sdf.format(cita.getFecha());
@@ -45,7 +45,7 @@ public class CitaMapper {
     public Cita toEntity(CitaDTO citaDTO, Paciente paciente, Medico medico) throws ParseException {
         Cita cita = new Cita();
 
-        citaDTO.setId(citaDTO.getId());
+        cita.setId(citaDTO.getId());
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Date fecha = sdf.parse(citaDTO.getFecha());

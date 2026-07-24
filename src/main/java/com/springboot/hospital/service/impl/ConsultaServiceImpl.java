@@ -1,6 +1,9 @@
 package com.springboot.hospital.service.impl;
 
+import com.springboot.hospital.repository.CitaRepository;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -14,6 +17,7 @@ import com.springboot.hospital.mapper.CitaMapper;
 import com.springboot.hospital.mapper.ConsultaMapper;
 import com.springboot.hospital.model.Cita;
 import com.springboot.hospital.model.Consulta;
+import com.springboot.hospital.model.StatusCita;
 import com.springboot.hospital.repository.ConsultaRepository;
 import com.springboot.hospital.service.CitaService;
 import com.springboot.hospital.service.ConsultaService;
@@ -24,6 +28,8 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class ConsultaServiceImpl implements ConsultaService{
+
+    private final CitaRepository citaRepository;
 
     private final ConsultaRepository consultaRepository;
 
@@ -70,15 +76,16 @@ public class ConsultaServiceImpl implements ConsultaService{
             
             Consulta updateConsulta = consultaRepository.save(consulta);
 
-            Cita cita = consulta.getCita();
+            CitaDTO citaDTO = consultaDTO.getCitaDTO();
 
-            if(cita != null) {
-                CitaDTO citaDTO = new CitaDTO(); 
-                citaDTO.setFecha(cita.getFecha().toString());
-                citaDTO.setCancelado(cita.isCancelado());
-                citaDTO.setStatusCita(cita.getStatusCita().toString());
-                citaDTO.setPacienteId(cita.getPaciente().getId());
-                citaDTO.setMedicoId(cita.getMedico().getId());
+            if(citaDTO != null) {
+                Cita cita = consulta.getCita();
+                if(cita != null) {
+                    cita.setFecha(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(citaDTO.getFecha()));
+                    cita.setStatusCita(StatusCita.valueOf(citaDTO.getStatusCita()));
+
+                    citaRepository.save(cita);
+                }
 
                 citaService.updateCita(cita.getId(),citaDTO);
             }
@@ -110,10 +117,29 @@ public class ConsultaServiceImpl implements ConsultaService{
 
     @Override
     public List<ConsultaDTO> getConsultaByCitaId(Long citaId) throws ParseException {
-        CitaDTO citaDTO = citaService.getCitaById(citaId).orElseThrow(() -> new EntityNotFoundException("Cita no encontrada"));
-        Cita cita = citaMapper.toEntity(citaDTO);
-        List<ConsultaDTO> consultas = getConsultasByCita(cita);
-        return consultas;
+        Optional<Cita> citaOptional = citaRepository.findById(citaId);
+        if(citaOptional.isPresent()) {
+            Cita cita = citaOptional.get();
+
+            if(cita.getId() != null) {
+                citaRepository.save(cita);
+            }
+            List<Consulta> consultas = consultaRepository.findByCita(cita);
+
+            List<ConsultaDTO> consultasDTO = new ArrayList();
+            for(Consulta consulta : consultas) {
+                ConsultaDTO consultaDTO = new ConsultaDTO();
+                consultaDTO.setId(consulta.getId());
+                consultaDTO.setFechaConsulta(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(consulta.getFechaConsulta()));
+                consultaDTO.setInforme(consulta.getInforme());
+
+                consultasDTO.add(consultaDTO);
+            }
+            return consultasDTO;
+        }
+        else {
+            throw new EntityNotFoundException("Cita no encontrada con ID: "+citaId);
+        }
     }
 
 }
